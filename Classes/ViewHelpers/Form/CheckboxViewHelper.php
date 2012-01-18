@@ -66,24 +66,30 @@ class Tx_Fluid_ViewHelpers_Form_CheckboxViewHelper extends Tx_Fluid_ViewHelpers_
 	 * Renders the checkbox.
 	 *
 	 * @param boolean $checked Specifies that the input element should be preselected
+	 * @param boolean $multiple Specifies whether this checkbox belongs to a multivalue (is part of a checkbox group)
 	 *
 	 * @return string
 	 * @api
 	 */
-	public function render($checked = NULL) {
+	public function render($checked = NULL, $multiple = NULL) {
 		$this->tag->addAttribute('type', 'checkbox');
 
 		$nameAttribute = $this->getName();
 		$valueAttribute = $this->getValue();
-		if ($checked === NULL && $this->isObjectAccessorMode()) {
+		if ($this->isObjectAccessorMode()) {
 			$propertyValue = $this->getPropertyValue();
-			if (is_bool($propertyValue)) {
-				$checked = $propertyValue === (boolean)$valueAttribute;
-			} elseif (is_array($propertyValue)) {
-				$checked = in_array($valueAttribute, $propertyValue);
+			if ($propertyValue instanceof \Traversable) {
+				$propertyValue = iterator_to_array($propertyValue);
+			}
+			if (is_array($propertyValue)) {
+				if ($checked === NULL) {
+					$checked = in_array($valueAttribute, $propertyValue);
+				}
 				$nameAttribute .= '[]';
-			} else {
-				throw new Tx_Fluid_Core_ViewHelper_Exception('Checkbox viewhelpers can only be bound to properties of type boolean or array. Property "' . $this->arguments['property'] . '" is of type "' . (is_object($propertyValue) ? get_class($propertyValue) : gettype($propertyValue)) . '".' , 1248261038);
+			} elseif ($multiple === TRUE) {
+				$nameAttribute .= '[]';
+			} elseif ($checked === NULL && $propertyValue !== NULL) {
+				$checked = (boolean)$propertyValue === (boolean)$valueAttribute;
 			}
 		}
 

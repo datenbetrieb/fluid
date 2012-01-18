@@ -71,16 +71,16 @@ class Tx_Fluid_Tests_Unit_ViewHelpers_Form_CheckboxViewHelperTest extends Tx_Flu
 	/**
 	 * @test
 	 */
-	public function renderIgnoresBoundPropertyIfCheckedIsSet() {
-		$mockTagBuilder = $this->getMock('Tx_Fluid_Core_ViewHelper_TagBuilder', array('setTagName', 'addAttribute'));
+	public function renderIgnoresValueOfBoundPropertyIfCheckedIsSet() {
+		$mockTagBuilder = $this->getMock('TYPO3\Fluid\Core\ViewHelper\TagBuilder', array('setTagName', 'addAttribute'));
 		$mockTagBuilder->expects($this->at(1))->method('addAttribute')->with('type', 'checkbox');
 		$mockTagBuilder->expects($this->at(2))->method('addAttribute')->with('name', 'foo');
 		$mockTagBuilder->expects($this->at(3))->method('addAttribute')->with('value', 'bar');
 
 		$this->viewHelper->expects($this->any())->method('getName')->will($this->returnValue('foo'));
 		$this->viewHelper->expects($this->any())->method('getValue')->will($this->returnValue('bar'));
-		$this->viewHelper->expects($this->never())->method('isObjectAccessorMode')->will($this->returnValue(TRUE));
-		$this->viewHelper->expects($this->never())->method('getPropertyValue')->will($this->returnValue(TRUE));
+		$this->viewHelper->expects($this->any())->method('isObjectAccessorMode')->will($this->returnValue(TRUE));
+		$this->viewHelper->expects($this->any())->method('getPropertyValue')->will($this->returnValue(TRUE));
 		$this->viewHelper->injectTagBuilder($mockTagBuilder);
 
 		$this->viewHelper->initialize();
@@ -150,11 +150,36 @@ class Tx_Fluid_Tests_Unit_ViewHelpers_Form_CheckboxViewHelperTest extends Tx_Flu
 
 	/**
 	 * @test
-	 * @expectedException Tx_Fluid_Core_ViewHelper_Exception
 	 */
-	public function bindingObjectsToACheckboxThatAreNotOfTypeBooleanOrArrayThrowsException() {
-		$mockTagBuilder = $this->getMock('Tx_Fluid_Core_ViewHelper_TagBuilder', array('setTagName', 'addAttribute'));
+	public function renderCorrectlySetsCheckedAttributeIfCheckboxIsBoundToAPropertyOfTypeArrayObject() {
+		$mockTagBuilder = $this->getMock('TYPO3\Fluid\Core\ViewHelper\TagBuilder', array('setTagName', 'addAttribute'));
+		$mockTagBuilder->expects($this->at(1))->method('addAttribute')->with('type', 'checkbox');
+		$mockTagBuilder->expects($this->at(2))->method('addAttribute')->with('name', 'foo[]');
+		$mockTagBuilder->expects($this->at(3))->method('addAttribute')->with('value', 'bar');
+		$mockTagBuilder->expects($this->at(4))->method('addAttribute')->with('checked', 'checked');
 
+		$this->viewHelper->expects($this->any())->method('getName')->will($this->returnValue('foo'));
+		$this->viewHelper->expects($this->any())->method('getValue')->will($this->returnValue('bar'));
+		$this->viewHelper->expects($this->any())->method('isObjectAccessorMode')->will($this->returnValue(TRUE));
+		$this->viewHelper->expects($this->any())->method('getPropertyValue')->will($this->returnValue(new \ArrayObject(array('foo', 'bar', 'baz'))));
+		$this->viewHelper->injectTagBuilder($mockTagBuilder);
+
+		$this->viewHelper->initialize();
+		$this->viewHelper->render();
+	}
+
+	/**
+	 * @test
+	 */
+	public function renderSetsCheckedAttributeIfBoundPropertyIsNotNull() {
+		$mockTagBuilder = $this->getMock('TYPO3\Fluid\Core\ViewHelper\TagBuilder', array('setTagName', 'addAttribute'));
+		$mockTagBuilder->expects($this->at(1))->method('addAttribute')->with('type', 'checkbox');
+		$mockTagBuilder->expects($this->at(2))->method('addAttribute')->with('name', 'foo');
+		$mockTagBuilder->expects($this->at(3))->method('addAttribute')->with('value', 'bar');
+		$mockTagBuilder->expects($this->at(4))->method('addAttribute')->with('checked', 'checked');
+
+		$this->viewHelper->expects($this->any())->method('getName')->will($this->returnValue('foo'));
+		$this->viewHelper->expects($this->any())->method('getValue')->will($this->returnValue('bar'));
 		$this->viewHelper->expects($this->any())->method('isObjectAccessorMode')->will($this->returnValue(TRUE));
 		$this->viewHelper->expects($this->any())->method('getPropertyValue')->will($this->returnValue(new stdClass()));
 		$this->viewHelper->injectTagBuilder($mockTagBuilder);
