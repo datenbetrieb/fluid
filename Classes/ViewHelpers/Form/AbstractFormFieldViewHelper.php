@@ -180,14 +180,19 @@ abstract class Tx_Fluid_ViewHelpers_Form_AbstractFormFieldViewHelper extends Tx_
 	 * @return mixed Value
 	 */
 	protected function getPropertyValue() {
-
-		$formObject = $this->viewHelperVariableContainer->get('Tx_Fluid_ViewHelpers_FormViewHelper', 'formObject');
-		$propertyName = $this->arguments['property'];
-
-		if (is_array($formObject)) {
-			return isset($formObject[$propertyName]) ? $formObject[$propertyName] : NULL;
+		if ($this->configurationManager->isFeatureEnabled('rewrittenPropertyMapper') && $this->hasMappingErrorOccured()) {
+			$value = $this->getLastSubmittedFormData();
+		} else {
+			$formObject = $this->viewHelperVariableContainer->get('Tx_Fluid_ViewHelpers_FormViewHelper', 'formObject');
+			$propertyName = $this->arguments['property'];
+			if (is_array($formObject)) {
+				$value = isset($formObject[$propertyName]) ? $formObject[$propertyName] : NULL;
+			} else {
+				$value = Tx_Extbase_Reflection_ObjectAccess::getPropertyPath($formObject, $propertyName);
+			}
 		}
-		return Tx_Extbase_Reflection_ObjectAccess::getPropertyPath($formObject, $propertyName);
+
+		return $value;
 	}
 
 	/**
